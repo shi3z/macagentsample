@@ -27,16 +27,22 @@
 #### オプションA: 既存モデルを使用（推奨）
 
 ```bash
-# qwen2.5を使用する場合
+# Qwen3.5を使用する場合（最新・推奨）
+ollama pull qwen3.5:32b
+
+# または Qwen3を使用する場合
+ollama pull qwen3:32b
+
+# または qwen2.5を使用する場合
 ollama pull qwen2.5:14b
 
 # または llama3.2を使用する場合
 ollama pull llama3.2:latest
 ```
 
-`backend/ollama_client.py` でモデル名を変更:
-```python
-model: str = "qwen2.5:14b"  # または "llama3.2:latest"
+起動時に環境変数でモデルを指定:
+```bash
+OLLAMA_MODEL=qwen3.5:32b uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 #### オプションB: 長コンテキストモデルを作成
@@ -109,7 +115,7 @@ mflux_path = "/path/to/your/conda/envs/mlx312/bin/mflux-generate"
 
 | 変数名 | デフォルト | 説明 |
 |--------|-----------|------|
-| `OLLAMA_MODEL` | `gpt-oss:20b-long` | 使用するOllamaモデル名 |
+| `OLLAMA_MODEL` | `gpt-oss:20b-long` | 使用するOllamaモデル名 (推奨: `qwen3.5:32b`) |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama APIのURL |
 
 ## 起動
