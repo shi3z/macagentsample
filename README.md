@@ -17,15 +17,65 @@
 - macOS (Apple Silicon推奨)
 - Python 3.11+
 - Node.js 18+
-- [Ollama](https://ollama.ai/) with `gpt-oss:20b-long` model
+- [Ollama](https://ollama.ai/)
 - Conda環境 `mlx312` with mflux (画像生成用)
 
 ## セットアップ
 
-### 1. Ollamaモデルのダウンロード
+### 1. Ollamaモデルのセットアップ
+
+#### オプションA: 既存モデルを使用（推奨）
 
 ```bash
-ollama pull gpt-oss:20b-long
+# qwen2.5を使用する場合
+ollama pull qwen2.5:14b
+
+# または llama3.2を使用する場合
+ollama pull llama3.2:latest
+```
+
+`backend/ollama_client.py` でモデル名を変更:
+```python
+model: str = "qwen2.5:14b"  # または "llama3.2:latest"
+```
+
+#### オプションB: 長コンテキストモデルを作成
+
+1. Modelfileを作成:
+```bash
+cat > Modelfile << 'EOF'
+FROM qwen2.5:14b
+PARAMETER num_ctx 32768
+EOF
+```
+
+2. カスタムモデルをビルド:
+```bash
+ollama create qwen2.5-long -f Modelfile
+```
+
+3. `backend/ollama_client.py` でモデル名を変更:
+```python
+model: str = "qwen2.5-long"
+```
+
+#### オプションC: gpt-oss:20b-long (カスタムモデル)
+
+このモデルは[GPT-OSS](https://huggingface.co/OpenBMB/GPT-OSS-20B)ベースのカスタムモデルです。
+
+1. ベースモデルをダウンロード (GGUF形式が必要)
+2. Modelfileを作成:
+```bash
+cat > Modelfile << 'EOF'
+FROM ./gpt-oss-20b.gguf
+PARAMETER num_ctx 131072
+PARAMETER temperature 1
+EOF
+```
+
+3. モデルをビルド:
+```bash
+ollama create gpt-oss:20b-long -f Modelfile
 ```
 
 ### 2. バックエンドのセットアップ
@@ -55,13 +105,24 @@ pip install mflux
 mflux_path = "/path/to/your/conda/envs/mlx312/bin/mflux-generate"
 ```
 
+## 環境変数
+
+| 変数名 | デフォルト | 説明 |
+|--------|-----------|------|
+| `OLLAMA_MODEL` | `gpt-oss:20b-long` | 使用するOllamaモデル名 |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama APIのURL |
+
 ## 起動
 
 ### バックエンド
 
 ```bash
 cd backend
+# デフォルトモデルで起動
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# または別のモデルを指定
+OLLAMA_MODEL=qwen2.5:14b uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### フロントエンド

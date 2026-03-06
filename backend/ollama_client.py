@@ -1,11 +1,12 @@
 """Ollama API Client with streaming support."""
+import os
 import httpx
 import json
 from typing import AsyncGenerator, Optional
 from dataclasses import dataclass
 
-OLLAMA_BASE_URL = "http://localhost:11434"
-DEFAULT_MODEL = "gpt-oss:20b-long"
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20b-long")
 
 
 @dataclass
